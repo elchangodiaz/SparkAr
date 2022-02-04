@@ -11,6 +11,8 @@ const Diagnostics = require('Diagnostics');
 const Patches = require('Patches'); // To exchange data between to Patch Editor and Script
 const Time = require('Time');
 const FaceTracking2D = require('FaceTracking2D');
+const FaceTracking = require('FaceTracking');
+
 
 
 var y = true;
@@ -36,14 +38,17 @@ var database = [c1, c2, c3, c4, c5, c6];
 
 (async function () {
 
-  const [questionTxt, recording] = await Promise.all([
+  const [face2D, faceTracker, questionTxt, recording, true_sel, false_sel ] = await Promise.all([
+    FaceTracking2D.face(0),
+    FaceTracking.face(0),
     Scene.root.findFirst('questionTxt'),
     Patches.outputs.getBoolean("recording"),
+    Patches.outputs.getPulse("true"),
+    Patches.outputs.getPulse("false")
   ]);
 
-  const face = FaceTracking2D.face(0);
-  var posX = face.boundingBox.x;
-  var posY = face.boundingBox.y;
+  var posX = face2D.boundingBox.x;
+  var posY = face2D.boundingBox.y;
 
   questionTxt.text = 'Piensa en un Personaje';
 
@@ -55,22 +60,14 @@ var database = [c1, c2, c3, c4, c5, c6];
   Diagnostics.watch("face x: ", posX);
   Diagnostics.watch("face y: ", posY);
 
+
+  const gameTopicChannel = Multipeer.getMessageChannel("GameTopic");
+ 
   recording.monitor().subscribe(function(recordingEvent){
     if(recordingEvent.newValue){
       questionTxt.text = 'Es ' + c1.get(i) + '?';
-      Time.setTimeout(onTimeout, delay+400);
-
-      if(posX < 0){
-        questionTxt.text = 'True';
-      }else if(posX > 0){
-        questionTxt.text = 'False';
-      }     
+      Time.setTimeout(onTimeout, delay+400); 
     }
   });
-
-
-
-
-
 
 })(); 
