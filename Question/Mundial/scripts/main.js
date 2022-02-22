@@ -11,8 +11,8 @@ const Patches = require('Patches'); // To exchange data between to Patch Editor 
 const Time = require('Time');
 const FaceTracking2D = require('FaceTracking2D');
 const FaceTracking = require('FaceTracking');
-const {dataJson} = require('./json.js');
-
+// const {equipos} = require('./json.js');
+const {fechas} = require('./json.js');
 
 // CONSTANTS
 const y = true;
@@ -40,13 +40,16 @@ c0.set(0, "humano");c0.set(1, "animado");c0.set(2, "mascota");c0.set(3, "verde")
   //SETUP
   var posX = face2D.boundingBox.x;
   var posY = face2D.boundingBox.y;
-  questionTxt.text = 'Piensa en un Personaje';
+  questionTxt.text = 'Quiniela Quatar 2022';
   questionTxt.height = 100;
   questionTxt.width = 250;
   Diagnostics.watch("face x: ", posX);
   Diagnostics.watch("face y: ", posY);
   let i = 0;
+  let j = 0;
+  
   let eleccion = [];
+  const fifaDate = new Date();
 
  //START RECORDING FUNCTION
   // recording.monitor().subscribe(function(recordingEvent){
@@ -56,7 +59,9 @@ c0.set(0, "humano");c0.set(1, "animado");c0.set(2, "mascota");c0.set(3, "verde")
   // });
  
   function starFilter(){
-    questionTxt.text = 'Es ' + c0.get(i) + '?';   
+
+    var firstRound = getTeams();
+    questionTxt.text = firstRound[0] + "    -    " + firstRound[1];   
     Diagnostics.watch("i : ", i);
 
     //Send Message to everyone: 0 == UP
@@ -69,6 +74,48 @@ c0.set(0, "humano");c0.set(1, "animado");c0.set(2, "mascota");c0.set(3, "verde")
       getTrueFalse(false);
     });
 
+  }
+
+  function getDate(){
+    var dateGame = fifaDate.getDate() + "." + fifaDate.getMonth();
+    //var dateGame = fifaDate.getTime();
+    //Diagnostics.log("getDate " + dateGame.toString())
+    //return dateGame;
+    return "22/5";
+  }
+
+  function getGames(){
+    var todayGame = getDate();
+    Diagnostics.log(todayGame.toString());
+    for(i=0; i<15; i++){
+      if((fechas["fecha_" + i].dia) == todayGame){
+        Diagnostics.log("getGames " + fechas["fecha_" + i].juegos)
+        return fechas["fecha_" + i].juegos; 
+      }
+    }
+    if(todayGame < (fechas["fecha_0"].dia)){
+      Diagnostics.log("getGames " + fechas["fecha_0"].juegos)
+      return fechas["fecha_0"].juegos; 
+    }
+    if(todayGame > (fechas["fecha_14"].dia)){
+      Diagnostics.log("************ " + fechas["fecha_14"].dia)
+      Diagnostics.log("getGames " + fechas["fecha_14"].juegos)
+      return fechas["fecha_14"].juegos; 
+    }
+  }
+
+  function getTeams(){
+    var games = getGames();
+    var arr = [];
+    var teams = [];
+    for(i=0; i<games.length; i++){
+      let arr = games[i].split("-");
+      for(j=0; j<2; j++){
+        teams.push(arr[j]);
+      }
+    }
+    Diagnostics.log("teams " + teams);
+    return teams;
   }
 
   function getTrueFalse(b){
