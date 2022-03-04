@@ -3,14 +3,13 @@ import { random } from 'Random';
 
 const Scene = require('Scene');
 const Time = require('Time');
-const Animation = require('Animation');
-const Random = require('Random');
 const Patches = require('Patches');
 const Instruction = require('Instruction');
 const Materials = require('Materials');
 const Textures = require('Textures')
 const FaceTracking = require('FaceTracking');
 const FaceGestures = require('FaceGestures');
+const Audio = require('Audio');
 
 
 export const Diagnostics = require('Diagnostics');
@@ -22,7 +21,8 @@ const delay = 10;
 
 (async function () {  // Enables async/await in JS [part 1]
 
-  const [display,smileImg,kissImg,closeEyeRImg,closeEyeLImg,openMouthImg,tongueImg,eyebrowsFImg,title,tap,face,stick] = await Promise.all([
+  const [display,smileImg,kissImg,closeEyeRImg,closeEyeLImg,openMouthImg,tongueImg,eyebrowsFImg,title,tap,face,inicioAudio,smileAudio,kissAudio,rEyeAudio,
+        lEyeAudio,surpricedAudio,tongueAudio,eyebrowsFAudio,eyebrowsRisedAudio] = await Promise.all([
     Materials.findFirst('display'),
     Textures.findFirst('smileImg'),
     Textures.findFirst('kissImg'),
@@ -34,7 +34,15 @@ const delay = 10;
     Textures.findFirst('titulo'),
     Patches.outputs.getPulse('tap'),
     FaceTracking.face(0),
-    Scene.root.findFirst('stick')
+    Audio.getAudioPlaybackController('inicioController'),
+    Audio.getAudioPlaybackController('sonrisaController'),
+    Audio.getAudioPlaybackController('besoController'),
+    Audio.getAudioPlaybackController('ojoDController'),
+    Audio.getAudioPlaybackController('ojoIController'),
+    Audio.getAudioPlaybackController('sorpresaController'),
+    Audio.getAudioPlaybackController('lenguaController'),
+    Audio.getAudioPlaybackController('fruncirCeñoController'),
+    Audio.getAudioPlaybackController('alzarCejaController')
   ]);
   
   const imgs = [smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg];
@@ -59,7 +67,7 @@ const delay = 10;
 
   Instruction.bind(true, 'tap_to_start');
 
-  
+  inicioAudio.setPlaying(true);
   
   tap.subscribe(function (e){
     if(status === 'ready'){
@@ -99,7 +107,6 @@ const delay = 10;
     status = 'finished';
     Diagnostics.log(status);
     Time.setTimeout(doFace, delay);
-    doFace();
   }
 
   function doFace(){
@@ -109,24 +116,38 @@ const delay = 10;
     switch (imgs[randomNum]){
       case imgs[0]:
         Patches.inputs.setBoolean('stickVisible', smile);
+        smileAudio.setPlaying(true);
+        smileAudio.reset();
         break;
       case imgs[1]:
         Patches.inputs.setBoolean('stickVisible', kiss);
+        kissAudio.setPlaying(true);
+        kissAudio.reset();
         break;
       case imgs[2]:
         Patches.inputs.setBoolean('stickVisible', rEye);
+        rEyeAudio.setPlaying(true);
+        rEyeAudio.reset();
         break;
       case imgs[3]:
         Patches.inputs.setBoolean('stickVisible', lEye);
+        lEyeAudio.setPlaying(true);
+        lEyeAudio.reset();
         break;
       case imgs[4]:
         Patches.inputs.setBoolean('stickVisible', surprised);
+        surpricedAudio.setPlaying(true);
+        surpricedAudio.reset();
         break;
       case imgs[5]:
         Patches.inputs.setBoolean('stickVisible', mouth);
+        tongueAudio.setPlaying(true);
+        tongueAudio.reset();
         break;
       case imgs[6]:
         Patches.inputs.setBoolean('stickVisible', eyebrowsFrowned);
+        eyebrowsFAudio.setPlaying(true);
+        eyebrowsFAudio.reset();
         break;
       default:
         Diagnostics.log("default");
@@ -140,7 +161,9 @@ const delay = 10;
     display.diffuse = title;
     Patches.inputs.setBoolean('stickVisible', false);
     status = 'ready';
+    inicioAudio.reset();
   };
+
 
   function getRandomInt(min, max) {
     min = 0;
