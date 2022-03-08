@@ -18,6 +18,7 @@ let randInterval = null;
 let status = 'ready';
 let randomNum;
 const delay = 10;
+let i;
 
 (async function () {  // Enables async/await in JS [part 1]
 
@@ -30,7 +31,7 @@ const delay = 10;
     Textures.findFirst('closeEyeLImg'),
     Textures.findFirst('openMouthImg'),
     Textures.findFirst('tongueImg'),
-    Textures.findFirst('fruncirCeño'),
+    Textures.findFirst('eyebrowsFImg'),
     Textures.findFirst('titulo'),
     Patches.outputs.getPulse('tap'),
     FaceTracking.face(0),
@@ -66,6 +67,7 @@ const delay = 10;
   Diagnostics.watch("eyebrowsRised: ", eyebrowsRised);
 
   Instruction.bind(true, 'tap_to_start');
+
 
   inicioAudio.setPlaying(true);
   
@@ -108,43 +110,43 @@ const delay = 10;
     Diagnostics.log(status);
     Time.setTimeout(doFace, delay);
   }
-
+//smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg
   function doFace(){
     loopAnim();
     Diagnostics.log("make gesture");
-    Diagnostics.log(randomNum)
-    switch (imgs[randomNum]){
-      case imgs[0]:
+    //Diagnostics.log(imgs[randomNum].name)
+    switch (imgs[randomNum].name){
+      case "smileImg":
         Patches.inputs.setBoolean('stickVisible', smile);
         smileAudio.setPlaying(true);
         smileAudio.reset();
         break;
-      case imgs[1]:
+      case "kissImg":
         Patches.inputs.setBoolean('stickVisible', kiss);
         kissAudio.setPlaying(true);
         kissAudio.reset();
         break;
-      case imgs[2]:
+      case "closeEyeRImg":
         Patches.inputs.setBoolean('stickVisible', rEye);
         rEyeAudio.setPlaying(true);
         rEyeAudio.reset();
         break;
-      case imgs[3]:
+      case "closeEyeLImg":
         Patches.inputs.setBoolean('stickVisible', lEye);
         lEyeAudio.setPlaying(true);
         lEyeAudio.reset();
         break;
-      case imgs[4]:
+      case "openMouthImg":
         Patches.inputs.setBoolean('stickVisible', surprised);
         surpricedAudio.setPlaying(true);
         surpricedAudio.reset();
         break;
-      case imgs[5]:
+      case "tongueImg":
         Patches.inputs.setBoolean('stickVisible', mouth);
         tongueAudio.setPlaying(true);
         tongueAudio.reset();
         break;
-      case imgs[6]:
+      case "eyebrowsFImg":
         Patches.inputs.setBoolean('stickVisible', eyebrowsFrowned);
         eyebrowsFAudio.setPlaying(true);
         eyebrowsFAudio.reset();
@@ -153,7 +155,8 @@ const delay = 10;
         Diagnostics.log("default");
         break;                  
     }
-    Instruction.bind(true, 'tap_to_reply')
+    removeElement(randomNum);
+    Instruction.bind(true, 'tap_to_reply');
   }
 
   function reset(){
@@ -161,14 +164,26 @@ const delay = 10;
     display.diffuse = title;
     Patches.inputs.setBoolean('stickVisible', false);
     status = 'ready';
-    inicioAudio.reset();
+    //inicioAudio.reset();
   };
 
 
   function getRandomInt(min, max) {
     min = 0;
+    if(imgs.length===0){
+      imgs.push(smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg);
+    }
     max = imgs.length;
     return Math.floor(Math.random() * (max - min)) + min;
-}
+  }
+
+  function removeElement(e){
+    for(i=0;i<imgs.length;i++){
+      if(imgs[i]===imgs[e]){
+        Diagnostics.log("eliminacion");
+        imgs.splice(i,1);
+      }
+    }
+  }
   
 })(); // Enables async/await in JS [part 2]
