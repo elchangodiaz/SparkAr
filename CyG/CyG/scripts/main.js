@@ -111,6 +111,7 @@ let i;
     Time.setTimeout(doFace, delay);
   }
 //smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg
+//Validar que solo se cierre un ojo
   function doFace(){
     loopAnim();
     Diagnostics.log("make gesture");
@@ -164,7 +165,9 @@ let i;
     display.diffuse = title;
     Patches.inputs.setBoolean('stickVisible', false);
     status = 'ready';
-    //inicioAudio.reset();
+    if(imgs.length===0){
+      inicioAudio.reset();
+    }
   };
 
 
