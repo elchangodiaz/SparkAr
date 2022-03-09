@@ -1,6 +1,3 @@
-import { resolveTxt } from 'dns';
-import { random } from 'Random';
-
 const Scene = require('Scene');
 const Time = require('Time');
 const Patches = require('Patches');
@@ -10,7 +7,7 @@ const Textures = require('Textures')
 const FaceTracking = require('FaceTracking');
 const FaceGestures = require('FaceGestures');
 const Audio = require('Audio');
-
+const Reactive = require('Reactive');
 
 export const Diagnostics = require('Diagnostics');
 
@@ -110,8 +107,7 @@ let i;
     Diagnostics.log(status);
     Time.setTimeout(doFace, delay);
   }
-//smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg
-//Validar que solo se cierre un ojo
+
   function doFace(){
     loopAnim();
     Diagnostics.log("make gesture");
@@ -128,12 +124,14 @@ let i;
         kissAudio.reset();
         break;
       case "closeEyeRImg":
-        Patches.inputs.setBoolean('stickVisible', rEye);
+        var boolrEye = Reactive.and(rEye,lEye.not())
+        Patches.inputs.setBoolean('stickVisible', boolrEye);
         rEyeAudio.setPlaying(true);
         rEyeAudio.reset();
         break;
       case "closeEyeLImg":
-        Patches.inputs.setBoolean('stickVisible', lEye);
+        var boollEye = Reactive.and(lEye,rEye.not());
+        Patches.inputs.setBoolean('stickVisible', boollEye);
         lEyeAudio.setPlaying(true);
         lEyeAudio.reset();
         break;
