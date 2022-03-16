@@ -36,6 +36,10 @@ export const Diagnostics = require('Diagnostics');
   ojoIPlaneTransform.y = leftEyeballIris.y;
   ojoIPlaneTransform.z = leftEyeballIris.z;
 
+  //setear el centro en la cara restando la posicion de ojo.x
+
+
+
   
 
 

@@ -19,7 +19,7 @@ let i;
 
 (async function () {  // Enables async/await in JS [part 1]
 
-  const [display,smileImg,kissImg,closeEyeRImg,closeEyeLImg,openMouthImg,tongueImg,eyebrowsFImg,title,tap,face,inicioAudio,smileAudio,kissAudio,rEyeAudio,
+  const [display,smileImg,kissImg,closeEyeRImg,closeEyeLImg,openMouthImg,tongueImg,eyebrowsFImg,eyebrowsRImg,title,tap,face,inicioAudio,smileAudio,kissAudio,rEyeAudio,
         lEyeAudio,surpricedAudio,tongueAudio,eyebrowsFAudio,eyebrowsRisedAudio] = await Promise.all([
     Materials.findFirst('display'),
     Textures.findFirst('smileImg'),
@@ -29,6 +29,7 @@ let i;
     Textures.findFirst('openMouthImg'),
     Textures.findFirst('tongueImg'),
     Textures.findFirst('eyebrowsFImg'),
+    Textures.findFirst('eyebrowsRImg'),
     Textures.findFirst('titulo'),
     Patches.outputs.getPulse('tap'),
     FaceTracking.face(0),
@@ -43,7 +44,7 @@ let i;
     Audio.getAudioPlaybackController('alzarCejaController')
   ]);
   
-  const imgs = [smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg];
+  const imgs = [smileImg, kissImg, closeEyeRImg, closeEyeLImg, openMouthImg, tongueImg, eyebrowsFImg, eyebrowsRImg];
 
   const lEye = FaceGestures.hasLeftEyeClosed(face);
   const rEye = FaceGestures.hasRightEyeClosed(face);
@@ -150,6 +151,11 @@ let i;
         eyebrowsFAudio.setPlaying(true);
         eyebrowsFAudio.reset();
         break;
+      case "eyebrowsRImg":
+        Patches.inputs.setBoolean('stickVisible', eyebrowsRised);
+        eyebrowsRisedAudio.setPlaying(true);
+        eyebrowsRisedAudio.reset();
+        break;  
       default:
         Diagnostics.log("default");
         break;                  
