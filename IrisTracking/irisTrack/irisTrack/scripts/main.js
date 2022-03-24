@@ -49,7 +49,7 @@ let randomNum;
   const leftEyeballCenter = leftEyeball.center;
   const leftEyeballIris = leftEyeball.iris;
   const leftEyeballRotation = leftEyeball.rotation;
-
+  
   const rightEyeballCenter = rightEyeball.center;
   const rightEyeballIris = rightEyeball.iris;
   const rightEyeballRotation = rightEyeball.rotation;
@@ -59,23 +59,44 @@ let randomNum;
   ojoDPlaneTransform.z = rightEyeballIris.z;
 
   ojoIPlaneTransform.x = leftEyeballIris.x;
-  ojoIPlaneTransform.y = leftEyeballIris.y;
+  ojoIPlaneTransform.y = leftEyeballIris.y; 
   ojoIPlaneTransform.z = leftEyeballIris.z;
 
   //setear el centro en la cara restando la posicion de ojo.x
 
-  const eyeMovementLx = leftEyeball.center.x;
-  const eyeMovementRx = rightEyeball.center.x;
-  const eyeMovementLy = leftEyeball.center.y;
-  const eyeMovementRy = rightEyeball.center.y;
+  const eyeMovementLx = leftEyeball.iris.x;
+  const eyeMovementRx = rightEyeball.iris.x;
+  const eyeMovementLy = leftEyeball.iris.y;
+  const eyeMovementRy = rightEyeball.iris.y;
 
-    //center    Lx=-0.032996, Ly=0.032055, Rx=0.032252, Ry=0.032632
-    //left      Lx=-0.034714, Ly=0.031328, Rx=0.032513, Ry=0.032277 / Lx=-0.033870, Ly=0.032289, Rx=0.032224, Ry=0.032100
-    //LUp       Lx=-0.034296, Ly=0.032448, Rx=0.032056, Ry=0.034291 / Lx=-0.034527, Ly=0.032433, Rx=0.032122, Ry=0.034233
-    //UP        Lx=-0.033346, Ly=0.032845, Rx=0.032045, Ry=0.034288 / Lx=-0.033698, Ly=0.033179, Rx=0.031758, Ry=0.034155
-    //RUp       Lx=-0.032982, Ly=0.033106, Rx=0.032267, Ry=0.034227 / Lx=-0.032750, Ly=0.033133, Rx=0.032028, Ry=0.034348
-    //R         Lx=-0.032556, Ly=0.032359, Rx=0.032670, Ry=0.032388 / Lx=-0.032290, Ly=0.032201, Rx=0.032692, Ry=0.032346
-    //RD        Lx=-0.032556, Ly=0.032359, Rx=0.032670, Ry=0.032388 / Lx=-0.032290, Ly=0.032201, Rx=0.032692, Ry=0.032346
+  
+    //rightball iris
+    //center    Lx=-0.033478, Ly=0.033862, Rx=0.034036, Ry=0.028769
+    //          Lx=-0.033112, Ly=0.033311, Rx=0.033741, Ry=0.030371
+
+    //LD        Lx=-0.033583, Ly=0.030841, Rx=0.032967, Ry=0.031911
+    //          Lx=-0.034416, Ly=0.030956, Rx=0.033026, Ry=0.031199
+
+    //left      Lx=-0.038325, Ly=0.031379, Rx=0.028632, Ry=0.028100 
+    //          Lx=-0.038084, Ly=0.030322, Rx=0.028028, Ry=0.027013
+
+    //LUp       Lx=-0.038768, Ly=0.035259, Rx=0.025277, Ry=0.035062 
+    //          Lx=-0.039406, Ly=0.035941, Rx=0.025946, Ry=0.034499
+    
+    //UP        Lx=-0.034248, Ly=0.036984, Rx=0.034360, Ry=0.036210 
+    //          Lx=-0.033542, Ly=0.036376, Rx=0.034342, Ry=0.035782
+
+    //RUp       Lx=-0.027382, Ly=0.035995, Rx=0.038391, Ry=0.035625 
+    //          Lx=-0.026434, Ly=0.035386, Rx=0.038421, Ry=0.035248
+
+    //R         Lx=-0.026640, Ly=0.032029, Rx=0.037514, Ry=0.031461 
+    //          Lx=-0.027800, Ly=0.032962, Rx=0.038167, Ry=0.032137
+
+    //RD        Lx=-0.033479, Ly=0.031766, Rx=0.033788, Ry=0.031703 
+    //          Lx=-0.033231, Ly=0.031721, Rx=0.033722, Ry=0.031722
+    
+    //D         Lx=-0.033688, Ly=0.031920, Rx=0.033819, Ry=0.031707 
+    //          Lx=-0.033886, Ly=0.032059, Rx=0.033568, Ry=0.031719
 
   Diagnostics.watch("LeyeMovex", eyeMovementLx);
   Diagnostics.watch("LeyeMovey", eyeMovementLy);
