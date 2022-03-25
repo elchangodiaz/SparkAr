@@ -1,5 +1,17 @@
 import { leftEyeball } from 'IrisTracking';
 
+//REGLAS
+/*
+EL juego solicitara en su primer nivel hacer un movimiento a la vez
+en el segundo nivel te solicitara realizar 2 movimientos, regresando al centro entre cada uno
+y asi hasta llegar a 5
+Los movimientos seran aleatorios sin poder repetirse entre ellos
+la instruccion se mostrara al inicio y emitira el sonido de cada movimiento
+en caso de acierto emitira sonido exito
+en caso de fallar un movimiento se repetira la secuencia a realizar y se indicara el fallo
+*/
+
+
 const Scene = require('Scene');
 const FaceTracking = require('FaceTracking');
 const IrisTracking = require('IrisTracking');
@@ -15,6 +27,8 @@ export const Diagnostics = require('Diagnostics');
 let status = 'ready';
 let randInterval = null;
 let randomNum;
+let i;
+let j;
 
 (async function () { 
 
@@ -46,13 +60,9 @@ let randomNum;
   const ojoDPlaneTransform = ojoDPlane.transform;
   const ojoIPlaneTransform = ojoIPlane.transform;
 
-  const leftEyeballCenter = leftEyeball.center;
   const leftEyeballIris = leftEyeball.iris;
-  const leftEyeballRotation = leftEyeball.rotation;
   
-  const rightEyeballCenter = rightEyeball.center;
   const rightEyeballIris = rightEyeball.iris;
-  const rightEyeballRotation = rightEyeball.rotation;
 
   ojoDPlaneTransform.x = rightEyeballIris.x;
   ojoDPlaneTransform.y = rightEyeballIris.y;
@@ -74,29 +84,29 @@ let randomNum;
     //center    Lx=-0.033478, Ly=0.033862, Rx=0.034036, Ry=0.028769
     //          Lx=-0.033112, Ly=0.033311, Rx=0.033741, Ry=0.030371
 
-    //LD        Lx=-0.033583, Ly=0.030841, Rx=0.032967, Ry=0.031911
-    //          Lx=-0.034416, Ly=0.030956, Rx=0.033026, Ry=0.031199
+    //LD        Lx=-0.037807, Ly=0.032257, Rx=0.030798, Ry=0.030726
+    //          Lx=-0.038351, Ly=0.030807, Rx=0.030726, Ry=0.031211
 
-    //left      Lx=-0.038325, Ly=0.031379, Rx=0.028632, Ry=0.028100 
-    //          Lx=-0.038084, Ly=0.030322, Rx=0.028028, Ry=0.027013
+    //left      Lx=-0.040521, Ly=0.033379, Rx=0.027800, Ry=0.032135 
+    //          Lx=-0.040590, Ly=0.032872, Rx=0.028199, Ry=0.031895
 
-    //LUp       Lx=-0.038768, Ly=0.035259, Rx=0.025277, Ry=0.035062 
-    //          Lx=-0.039406, Ly=0.035941, Rx=0.025946, Ry=0.034499
+    //LUp       Lx=-0.041943, Ly=0.034708, Rx=0.026362, Ry=0.037497 
+    //          Lx=-0.042595, Ly=0.036026, Rx=0.026001, Ry=0.038107
     
-    //UP        Lx=-0.034248, Ly=0.036984, Rx=0.034360, Ry=0.036210 
-    //          Lx=-0.033542, Ly=0.036376, Rx=0.034342, Ry=0.035782
+    //UP        Lx=-0.034335, Ly=0.038400, Rx=0.035107, Ry=0.039782 
+    //          Lx=-0.034325, Ly=0.039331, Rx=0.034447, Ry=0.041007
 
-    //RUp       Lx=-0.027382, Ly=0.035995, Rx=0.038391, Ry=0.035625 
-    //          Lx=-0.026434, Ly=0.035386, Rx=0.038421, Ry=0.035248
+    //RUp       Lx=-0.027771, Ly=0.037121, Rx=0.041424, Ry=0.038363 
+    //          Lx=-0.026662, Ly=0.036668, Rx=0.041276, Ry=0.037236
 
-    //R         Lx=-0.026640, Ly=0.032029, Rx=0.037514, Ry=0.031461 
-    //          Lx=-0.027800, Ly=0.032962, Rx=0.038167, Ry=0.032137
+    //R         Lx=-0.027593, Ly=0.032998, Rx=0.039267, Ry=0.031879 
+    //          Lx=-0.026632, Ly=0.034631, Rx=0.039550, Ry=0.032752
 
-    //RD        Lx=-0.033479, Ly=0.031766, Rx=0.033788, Ry=0.031703 
-    //          Lx=-0.033231, Ly=0.031721, Rx=0.033722, Ry=0.031722
+    //RD        Lx=-0.028621, Ly=0.033784, Rx=0.038274, Ry=0.031781 
+    //          Lx=-0.029477, Ly=0.031880, Rx=0.037675, Ry=0.030304
     
-    //D         Lx=-0.033688, Ly=0.031920, Rx=0.033819, Ry=0.031707 
-    //          Lx=-0.033886, Ly=0.032059, Rx=0.033568, Ry=0.031719
+    //D         Lx=-0.034382, Ly=0.032926, Rx=0.034028, Ry=0.030991 
+    //          Lx=-0.033525, Ly=0.033279, Rx=0.033840, Ry=0.031131
 
   Diagnostics.watch("LeyeMovex", eyeMovementLx);
   Diagnostics.watch("LeyeMovey", eyeMovementLy);
@@ -120,11 +130,25 @@ let randomNum;
   function starFilter(){
     status = 'running';
     Diagnostics.log(status);
-    randInterval = Time.setInterval(function(){
-      loopAnim();
-    },100);
-    beginCountDown();
+    setLevel();
   }
+
+  function setLevel(){
+    for(i=0;i<5;i++){
+      i=2;
+      startLevel(i);
+    }
+  }
+
+  function startLevel(i){
+    for(j=0;j==i;j++){
+      randomNum = getRandomInt(0, imgs.length);
+      let imgSel = imgs[randomNum];
+      displayMat.diffuse = imgSel;
+      Diagnostics.log("cambio img");
+    }
+  }
+
 
   function loopAnim(){
     randomNum = getRandomInt(0, imgs.length);
