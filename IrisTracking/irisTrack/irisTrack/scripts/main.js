@@ -29,6 +29,8 @@ let randInterval = null;
 let randomNum;
 let i;
 let j;
+let level = 0;
+const delay = 1000;
 
 (async function () { 
 
@@ -51,8 +53,10 @@ let j;
     Patches.outputs.getPulse('tap')
   ]);
   
-  const imgs = [miraCImg, miraUImg, miraURImg, miraULImg, miraDImg, miraDLImg, miraDRImg, 
+  const imgs = [miraUImg, miraURImg, miraULImg, miraDImg, miraDLImg, miraDRImg, 
                 miraLImg, miraRImg];
+
+  let sequence = [];
 
   const leftEyeball = IrisTracking.leftEyeball(face);
   const rightEyeball = IrisTracking.rightEyeball(face);
@@ -130,49 +134,75 @@ let j;
   function starFilter(){
     status = 'running';
     Diagnostics.log(status);
-    setLevel();
+    startGame();
   }
 
-  function setLevel(){
-    for(i=0;i<5;i++){
-      i=2;
-      startLevel(i);
+  function startGame(){
+    startLevel();
+    
+  }
+
+  function upLevel(){
+    level++
+    Diagnostics.log("level: " + level);
+    return level;
+  }
+
+  function startLevel(){
+    upLevel();
+    for(i=0;i<level;i++){
+      setSequence();
     }
+    stop();
   }
 
-  function startLevel(i){
-    for(j=0;j==i;j++){
-      randomNum = getRandomInt(0, imgs.length);
-      let imgSel = imgs[randomNum];
-      displayMat.diffuse = imgSel;
-      Diagnostics.log("cambio img");
-    }
-  }
-
-
-  function loopAnim(){
+  function setImage(){
     randomNum = getRandomInt(0, imgs.length);
     let imgSel = imgs[randomNum];
+    setSequence();
+    setMaterial(imgSel);
+  }
+
+  function setMaterial(imgSel){
     displayMat.diffuse = imgSel;
+    Diagnostics.log(imgSel.name);
+  }
+
+  function setSequence(){
+    sequence.push(imgs[randomNum].name);
+  }
+
+  function setInstruction(){
+    Diagnostics.log("instruccion");
   }
 
   function beginCountDown(){
     Time.setTimeout(function(){
       stop();
-    }, 3000);
+    }, 1000);
   };
   
   function stop(){
-    Time.clearInterval(randInterval);
+    //Time.clearInterval(randInterval);
     status = 'finished';
     Diagnostics.log(status);
     //Time.setTimeout(doFace, delay);
   }
 
+  function reset(){
+    Instruction.bind(true, 'tap_to_start');
+    displayMat.diffuse = miraCImg;
+    //Patches.inputs.setBoolean('stickVisible', false);
+    status = 'ready';
+    if(imgs.length===0){
+      inicioAudio.reset();
+    }
+  };
+
   function getRandomInt(min, max) {
     min = 0;
     if(imgs.length===0){
-      imgs.push(miraCImg, miraUImg, miraURImg, miraULImg, miraDImg, miraDLImg, miraDRImg, 
+      imgs.push(miraUImg, miraURImg, miraULImg, miraDImg, miraDLImg, miraDRImg, 
         miraLImg, miraRImg);
     }
     max = imgs.length;
