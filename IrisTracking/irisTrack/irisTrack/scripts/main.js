@@ -1,4 +1,5 @@
 import { leftEyeball } from 'IrisTracking';
+import TimeModule from 'Time';
 
 //REGLAS
 /*
@@ -142,24 +143,25 @@ const delay = 1000;
     
   }
 
+  function startLevel(){
+    upLevel();
+    for(i=0;i<level;i++){
+      setImage();
+      TimeModule.setTimeout(setSequence,1000);
+    }
+    stop();
+  }
+
   function upLevel(){
     level++
     Diagnostics.log("level: " + level);
     return level;
   }
 
-  function startLevel(){
-    upLevel();
-    for(i=0;i<level;i++){
-      setSequence();
-    }
-    stop();
-  }
-
   function setImage(){
     randomNum = getRandomInt(0, imgs.length);
     let imgSel = imgs[randomNum];
-    setSequence();
+    //setSequence();
     setMaterial(imgSel);
   }
 
@@ -169,7 +171,7 @@ const delay = 1000;
   }
 
   function setSequence(){
-    sequence.push(imgs[randomNum].name);
+    sequence.push(imgs[randomNum]);
   }
 
   function setInstruction(){
