@@ -26,12 +26,13 @@ const Time = require('Time');
 export const Diagnostics = require('Diagnostics');
 
 let status = 'ready';
-let randInterval = null;
+let intervalTimer = null;
 let randomNum;
 let i;
 let j;
 let level = 0;
 const delay = 1000;
+let imgSel;
 
 (async function () { 
 
@@ -146,10 +147,9 @@ const delay = 1000;
   function startLevel(){
     upLevel();
     for(i=0;i<level;i++){
-      setImage();
-      TimeModule.setTimeout(setSequence,1000);
+      Time.setTimeout(setImage, delay*(i+1));
     }
-    stop();
+    Time.setTimeout(stop, delay*level);
   }
 
   function upLevel(){
@@ -160,12 +160,16 @@ const delay = 1000;
 
   function setImage(){
     randomNum = getRandomInt(0, imgs.length);
-    let imgSel = imgs[randomNum];
-    //setSequence();
-    setMaterial(imgSel);
+    imgSel = imgs[randomNum];
+    setMaterial();
+    setSequence();
   }
 
-  function setMaterial(imgSel){
+  function setImgCenter(){
+    displayMat.diffuse = miraCImg;
+  }
+
+  function setMaterial(){
     displayMat.diffuse = imgSel;
     Diagnostics.log(imgSel.name);
   }
@@ -173,32 +177,15 @@ const delay = 1000;
   function setSequence(){
     sequence.push(imgs[randomNum]);
   }
-
-  function setInstruction(){
-    Diagnostics.log("instruccion");
-  }
-
-  function beginCountDown(){
-    Time.setTimeout(function(){
-      stop();
-    }, 1000);
-  };
   
   function stop(){
-    //Time.clearInterval(randInterval);
+    Time.setTimeout(setImgCenter, delay);
     status = 'finished';
     Diagnostics.log(status);
-    //Time.setTimeout(doFace, delay);
   }
 
   function reset(){
-    Instruction.bind(true, 'tap_to_start');
-    displayMat.diffuse = miraCImg;
-    //Patches.inputs.setBoolean('stickVisible', false);
     status = 'ready';
-    if(imgs.length===0){
-      inicioAudio.reset();
-    }
   };
 
   function getRandomInt(min, max) {
@@ -210,5 +197,15 @@ const delay = 1000;
     max = imgs.length;
     return Math.floor(Math.random() * (max - min)) + min;
   }
+
+  function removeElement(e){
+    for(i=0;i<imgs.length;i++){
+      if(imgs[i]===imgs[e]){
+        Diagnostics.log("eliminacion");
+        imgs.splice(i,1);
+      }
+    }
+  }
+
 
 })(); 
