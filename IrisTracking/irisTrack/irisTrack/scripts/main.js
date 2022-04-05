@@ -37,7 +37,7 @@ let imgSel;
 (async function () { 
 
   const [face,indicatorPlane, ojoDPlane, ojoIPlane, miraCImg, miraUImg, miraURImg, miraULImg, 
-         miraDImg, miraDLImg, miraDRImg, miraLImg, miraRImg, displayMat, tap] = await Promise.all([
+         miraDImg, miraDLImg, miraDRImg, miraLImg, miraRImg, repiteMovImg, displayMat, tap] = await Promise.all([
     FaceTracking.face(0),
     Scene.root.findFirst('indicator'),
     Scene.root.findFirst('ojoD'),
@@ -51,6 +51,7 @@ let imgSel;
     Textures.findFirst('MiraDRImg'),
     Textures.findFirst('MiraLImg'),
     Textures.findFirst('MiraRImg'),
+    Textures.findFirst('RepiteMov'),
     Materials.findFirst('displayMat'),
     Patches.outputs.getPulse('tap')
   ]);
@@ -140,8 +141,8 @@ let imgSel;
   }
 
   function startGame(){
+    setImgCenter();
     startLevel();
-    
   }
 
   function startLevel(){
@@ -149,7 +150,7 @@ let imgSel;
     for(i=0;i<level;i++){
       Time.setTimeout(setImage, delay*(i+1));
     }
-    Time.setTimeout(stop, delay*level);
+    Time.setTimeout(stop, delay*(level));
   }
 
   function upLevel(){
@@ -169,6 +170,10 @@ let imgSel;
     displayMat.diffuse = miraCImg;
   }
 
+  function setImgRepite(){
+    displayMat.diffuse = repiteMovImg;
+  }
+
   function setMaterial(){
     displayMat.diffuse = imgSel;
     Diagnostics.log(imgSel.name);
@@ -182,6 +187,7 @@ let imgSel;
     Time.setTimeout(setImgCenter, delay);
     status = 'finished';
     Diagnostics.log(status);
+    Time.setTimeout(setImgRepite, delay+1000);    
   }
 
   function reset(){
