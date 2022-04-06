@@ -146,11 +146,14 @@ let imgSel;
   }
 
   function startLevel(){
-    upLevel();
-    for(i=0;i<level;i++){
-      Time.setTimeout(setImage, delay*(i+1));
+    if(level==0 || imgs.length<level){
+      upLevel();
     }
-    Time.setTimeout(stop, delay*(level));
+    for(i=0;i<level;i++){
+      Time.setTimeout(setImage, delay*(i*2));
+      Time.setTimeout(setImgCenter, delay*(i+i+1));
+    }
+    Time.setTimeout(stop, delay*((level-1)*2));
   }
 
   function upLevel(){
@@ -164,10 +167,12 @@ let imgSel;
     imgSel = imgs[randomNum];
     setMaterial();
     setSequence();
+    removeElement(randomNum);
   }
 
   function setImgCenter(){
     displayMat.diffuse = miraCImg;
+    Diagnostics.log("center");
   }
 
   function setImgRepite(){
@@ -184,10 +189,15 @@ let imgSel;
   }
   
   function stop(){
-    Time.setTimeout(setImgCenter, delay);
+    //Time.setTimeout(setImgCenter, delay);
     status = 'finished';
     Diagnostics.log(status);
-    Time.setTimeout(setImgRepite, delay+1000);    
+    Time.setTimeout(setImgRepite, delay+1000);
+    watchEyes();
+  }
+
+  function watchEyes(){
+    
   }
 
   function reset(){
