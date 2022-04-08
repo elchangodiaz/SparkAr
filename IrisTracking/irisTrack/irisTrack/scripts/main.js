@@ -21,6 +21,7 @@ const Textures = require('Textures');
 const Instruction = require('Instruction');
 const Patches = require('Patches');
 const Time = require('Time');
+const Reactive = require('Reactive');
 
 
 export const Diagnostics = require('Diagnostics');
@@ -29,10 +30,14 @@ let status = 'ready';
 let intervalTimer = null;
 let randomNum;
 let i;
-let j;
+let j = 0;
 let level = 0;
 const delay = 1000;
 let imgSel;
+let eyesWatched;
+
+let leftEye;
+let rightEye;
 
 (async function () { 
 
@@ -81,10 +86,10 @@ let imgSel;
 
   //setear el centro en la cara restando la posicion de ojo.x
 
-  const eyeMovementLx = leftEyeball.iris.x;
-  const eyeMovementRx = rightEyeball.iris.x;
-  const eyeMovementLy = leftEyeball.iris.y;
-  const eyeMovementRy = rightEyeball.iris.y;
+  const eyeMovementLx = Reactive.val(leftEyeball.iris.x);
+  const eyeMovementRx = Reactive.val(rightEyeball.iris.x);
+  const eyeMovementLy = Reactive.val(leftEyeball.iris.y);
+  const eyeMovementRy = Reactive.val(rightEyeball.iris.y);
 
   
     //rightball iris
@@ -136,7 +141,7 @@ let imgSel;
 
   function starFilter(){
     status = 'running';
-    Diagnostics.log(status);
+    //Diagnostics.log(status);
     startGame();
   }
 
@@ -158,7 +163,7 @@ let imgSel;
 
   function upLevel(){
     level++
-    Diagnostics.log("level: " + level);
+    //Diagnostics.log("level: " + level);
     return level;
   }
 
@@ -172,7 +177,7 @@ let imgSel;
 
   function setImgCenter(){
     displayMat.diffuse = miraCImg;
-    Diagnostics.log("center");
+    //Diagnostics.log("center");
   }
 
   function setImgRepite(){
@@ -181,7 +186,7 @@ let imgSel;
 
   function setMaterial(){
     displayMat.diffuse = imgSel;
-    Diagnostics.log(imgSel.name);
+    //Diagnostics.log(imgSel.name);
   }
 
   function setSequence(){
@@ -191,14 +196,174 @@ let imgSel;
   function stop(){
     //Time.setTimeout(setImgCenter, delay);
     status = 'finished';
-    Diagnostics.log(status);
+    //Diagnostics.log(status);
     Time.setTimeout(setImgRepite, delay+1000);
-    watchEyes();
+    Time.setTimeout(watchEyes, delay);
+    eyesWatched = watchEyes();
+    Diagnostics.log("---------");
+    
   }
 
   function watchEyes(){
-    
+      switch(sequence[j].name){
+        case "MiraUImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraDImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;  
+        case "MiraRImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraLImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraURImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraULImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraDRImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        case "MiraDLImg":
+          leftEyesPos();
+          rightEyesPos();
+          break;
+        default:
+          //Diagnostics.log("default");
+          break;                
+      }
+      status = 'finished';
+      Diagnostics.log(sequence[j].name);
   }
+  
+
+  function leftEyesPos(){
+    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()>0.032000 && eyeMovementLy.pinLastValue()<0.035000){
+      leftEye = "center";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()>0.036000){
+      leftEye =  "up";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()<0.029000){
+      leftEye =  "down";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()>0.030000 && eyeMovementLy.pinLastValue()<0.035000){
+      leftEye =  "left";
+      Diagnostics.log(leftEye);
+    }else
+    if(eyeMovementLx.pinLastValue()>-0.029000 && eyeMovementLy.pinLastValue()>0.032000 && eyeMovementLy.pinLastValue()<0.035000){
+      leftEye =  "right";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()>-0.031500 && eyeMovementLy.pinLastValue()>0.036000){
+      leftEye =  "upRight";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()>0.036000){
+      leftEye =  "upLeft";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()>-0.029000 && eyeMovementLy.pinLastValue()<0.029000){
+      leftEye =  "downRight";
+      Diagnostics.log(leftEye);
+    } else
+    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()<0.029000){
+      leftEye =  "downLeft";
+      Diagnostics.log(leftEye);
+    }else
+    Diagnostics.log("no match");
+  }
+
+
+  function rightEyesPos(){
+    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()>0.032000 && eyeMovementRy.pinLastValue()<0.035000){
+      rightEye = "center";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()>0.036000){
+      rightEye = "up";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()<0.029000){
+      rightEye = "down";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()<0.030000 && eyeMovementRy.pinLastValue()>0.030000 && eyeMovementRy.pinLastValue()<0.035000){
+      rightEye = "left";
+      Diagnostics.log(rightEye.toString);
+    }else
+    if(eyeMovementRx.pinLastValue()>0.036000 && eyeMovementRy.pinLastValue()>0.032000 && eyeMovementRy.pinLastValue()<0.035000){
+      rightEye = "right";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()>0.034000 && eyeMovementRy.pinLastValue()>0.036000){
+      rightEye = "upRight";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()<0.028000 && eyeMovementRy.pinLastValue()>0.036000){
+      rightEye = "upLeft";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()>0.036000 && eyeMovementRy.pinLastValue()<0.029000){
+      rightEye = "downRight";
+      Diagnostics.log(rightEye.toString);
+    } else
+    if(eyeMovementRx.pinLastValue()<0.039000 && eyeMovementRy.pinLastValue()<0.029000){
+      rightEye = "downLeft";
+      Diagnostics.log(rightEye.toString);
+    } else
+    Diagnostics.log("no match");
+  }
+
+  // const eyeMovementLx = leftEyeball.iris.x;
+  // const eyeMovementRx = rightEyeball.iris.x;
+  // const eyeMovementLy = leftEyeball.iris.y;
+  // const eyeMovementRy = rightEyeball.iris.y;
+
+
+
+  
+    //rightball iris
+    //center    Lx=-0.033478, Ly=0.033862, Rx=0.034036, Ry=0.028769
+    //          Lx=-0.033112, Ly=0.033311, Rx=0.033741, Ry=0.030371
+
+    //LD        Lx=-0.037807, Ly=0.032257, Rx=0.030798, Ry=0.030726
+    //          Lx=-0.038351, Ly=0.030807, Rx=0.030726, Ry=0.031211
+
+    //left      Lx=-0.040521, Ly=0.033379, Rx=0.027800, Ry=0.032135 
+    //          Lx=-0.040590, Ly=0.032872, Rx=0.028199, Ry=0.031895
+
+    //LUp       Lx=-0.041943, Ly=0.034708, Rx=0.026362, Ry=0.037497 
+    //          Lx=-0.042595, Ly=0.036026, Rx=0.026001, Ry=0.038107
+    
+    //UP        Lx=-0.034335, Ly=0.038400, Rx=0.035107, Ry=0.039782 
+    //          Lx=-0.034325, Ly=0.039331, Rx=0.034447, Ry=0.041007
+
+    //RUp       Lx=-0.027771, Ly=0.037121, Rx=0.041424, Ry=0.038363 
+    //          Lx=-0.026662, Ly=0.036668, Rx=0.041276, Ry=0.037236
+
+    //R         Lx=-0.027593, Ly=0.032998, Rx=0.039267, Ry=0.031879 
+    //          Lx=-0.026632, Ly=0.034631, Rx=0.039550, Ry=0.032752
+
+    //RD        Lx=-0.028621, Ly=0.033784, Rx=0.038274, Ry=0.031781 
+    //          Lx=-0.029477, Ly=0.031880, Rx=0.037675, Ry=0.030304
+    
+    //D         Lx=-0.034382, Ly=0.027386, Rx=0.034028, Ry=0.026945
+    //          Lx=-0.033525, Ly=0.026900, Rx=0.033840, Ry=0.027389
+
 
   function reset(){
     status = 'ready';
@@ -217,7 +382,7 @@ let imgSel;
   function removeElement(e){
     for(i=0;i<imgs.length;i++){
       if(imgs[i]===imgs[e]){
-        Diagnostics.log("eliminacion");
+        //Diagnostics.log("eliminacion");
         imgs.splice(i,1);
       }
     }
