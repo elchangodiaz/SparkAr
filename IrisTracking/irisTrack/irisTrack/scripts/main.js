@@ -86,10 +86,10 @@ let rightEye;
 
   //setear el centro en la cara restando la posicion de ojo.x
 
-  const eyeMovementLx = Reactive.val(leftEyeball.iris.x);
-  const eyeMovementRx = Reactive.val(rightEyeball.iris.x);
-  const eyeMovementLy = Reactive.val(leftEyeball.iris.y);
-  const eyeMovementRy = Reactive.val(rightEyeball.iris.y);
+  const eyeMovementLx = leftEyeball.iris.x;
+  const eyeMovementRx = rightEyeball.iris.x;
+  const eyeMovementLy = leftEyeball.iris.y;
+  const eyeMovementRy = rightEyeball.iris.y;
 
   
     //rightball iris
