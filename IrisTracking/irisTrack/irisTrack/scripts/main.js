@@ -22,6 +22,7 @@ const Instruction = require('Instruction');
 const Patches = require('Patches');
 const Time = require('Time');
 const Reactive = require('Reactive');
+const Audio = require('Audio');
 
 
 export const Diagnostics = require('Diagnostics');
@@ -35,6 +36,13 @@ let level = 0;
 const delay = 1000;
 let imgSel;
 let eyesWatched;
+let isLooking = false;
+let lookingUp = false;
+let lookingDown = false;
+let lookingLeft = false;
+let lookingRight = false;
+let lookingCenterX = false;
+let lookingCenterY = false;
 
 let leftEye;
 let rightEye;
@@ -42,7 +50,8 @@ let rightEye;
 (async function () { 
 
   const [face,indicatorPlane, ojoDPlane, ojoIPlane, miraCImg, miraUImg, miraURImg, miraULImg, 
-         miraDImg, miraDLImg, miraDRImg, miraLImg, miraRImg, repiteMovImg, displayMat, tap] = await Promise.all([
+         miraDImg, miraDLImg, miraDRImg, miraLImg, miraRImg, repiteMovImg, displayMat, tap,
+        correctAudio, incorrectAudio] = await Promise.all([
     FaceTracking.face(0),
     Scene.root.findFirst('indicator'),
     Scene.root.findFirst('ojoD'),
@@ -58,7 +67,9 @@ let rightEye;
     Textures.findFirst('MiraRImg'),
     Textures.findFirst('RepiteMov'),
     Materials.findFirst('displayMat'),
-    Patches.outputs.getPulse('tap')
+    Patches.outputs.getPulse('tap'),
+    Audio.getAudioPlaybackController('correctController'),
+    Audio.getAudioPlaybackController('incorrectController')
   ]);
   
   const imgs = [miraUImg, miraURImg, miraULImg, miraDImg, miraDLImg, miraDRImg, 
@@ -91,39 +102,18 @@ let rightEye;
   const eyeMovementLy = leftEyeball.iris.y;
   const eyeMovementRy = rightEyeball.iris.y;
 
-  
-    //rightball iris
-    //center    Lx=-0.033478, Ly=0.033862, Rx=0.034036, Ry=0.028769
-    //          Lx=-0.033112, Ly=0.033311, Rx=0.033741, Ry=0.030371
-
-    //LD        Lx=-0.037807, Ly=0.032257, Rx=0.030798, Ry=0.030726
-    //          Lx=-0.038351, Ly=0.030807, Rx=0.030726, Ry=0.031211
-
-    //left      Lx=-0.040521, Ly=0.033379, Rx=0.027800, Ry=0.032135 
-    //          Lx=-0.040590, Ly=0.032872, Rx=0.028199, Ry=0.031895
-
-    //LUp       Lx=-0.041943, Ly=0.034708, Rx=0.026362, Ry=0.037497 
-    //          Lx=-0.042595, Ly=0.036026, Rx=0.026001, Ry=0.038107
-    
-    //UP        Lx=-0.034335, Ly=0.038400, Rx=0.035107, Ry=0.039782 
-    //          Lx=-0.034325, Ly=0.039331, Rx=0.034447, Ry=0.041007
-
-    //RUp       Lx=-0.027771, Ly=0.037121, Rx=0.041424, Ry=0.038363 
-    //          Lx=-0.026662, Ly=0.036668, Rx=0.041276, Ry=0.037236
-
-    //R         Lx=-0.027593, Ly=0.032998, Rx=0.039267, Ry=0.031879 
-    //          Lx=-0.026632, Ly=0.034631, Rx=0.039550, Ry=0.032752
-
-    //RD        Lx=-0.028621, Ly=0.033784, Rx=0.038274, Ry=0.031781 
-    //          Lx=-0.029477, Ly=0.031880, Rx=0.037675, Ry=0.030304
-    
-    //D         Lx=-0.034382, Ly=0.032926, Rx=0.034028, Ry=0.030991 
-    //          Lx=-0.033525, Ly=0.033279, Rx=0.033840, Ry=0.031131
-
   Diagnostics.watch("LeyeMovex", eyeMovementLx);
   Diagnostics.watch("LeyeMovey", eyeMovementLy);
   Diagnostics.watch("ReyeMovex", eyeMovementRx);
   Diagnostics.watch("ReyeMovey", eyeMovementRy);
+  Diagnostics.watch("isLooking ", isLooking);
+  Diagnostics.watch("up: " , lookingUp);
+  Diagnostics.watch("down: " , lookingDown);
+  Diagnostics.watch("left: " , lookingLeft);
+  Diagnostics.watch("right: " , lookingRight);
+  Diagnostics.watch("centerx: " , lookingCenterX);
+  Diagnostics.watch("centery: " , lookingCenterY);
+
 
   Instruction.bind(true, 'tap_to_start');
 
@@ -139,9 +129,9 @@ let rightEye;
     }
   })
 
+
   function starFilter(){
     status = 'running';
-    //Diagnostics.log(status);
     startGame();
   }
 
@@ -163,7 +153,6 @@ let rightEye;
 
   function upLevel(){
     level++
-    //Diagnostics.log("level: " + level);
     return level;
   }
 
@@ -171,13 +160,117 @@ let rightEye;
     randomNum = getRandomInt(0, imgs.length);
     imgSel = imgs[randomNum];
     setMaterial();
-    setSequence();
+    setSequence(randomNum);
     removeElement(randomNum);
   }
 
+  function setSequence(ranNum){
+    sequence.push(imgs[ranNum]);
+  }
+  
+  function stop(){
+    Time.setTimeout(setImgRepite, delay+1000);
+    Time.setTimeout(watchEyes, delay+2000);
+  }
+
+  function watchEyes(){
+    let selection = sequence[j].name;
+    Diagnostics.log(selection);
+      switch(selection){
+        case "MiraUImg":
+          isLooking = Reactive.and(lookUp(), lookCenterX()).monitor().subscribe(function (lookGoodUp){
+            correctLook();
+          });
+          break;
+        case "MiraDImg":
+          isLooking = Reactive.and(lookDown(), lookCenterX()).monitor().subscribe(function (lookGoodDown){
+            correctLook();
+          });
+          break;  
+        case "MiraRImg":
+          isLooking = Reactive.and(lookRigt(), lookCenterY()).monitor().subscribe(function (lookGoodRight){
+            correctLook();
+          });
+          break;
+        case "MiraLImg":
+          isLooking = Reactive.and(lookLeft(), lookCenterY()).monitor().subscribe(function (lookGoodLeft){
+            correctLook();
+          });
+          break;
+        case "MiraURImg":
+          isLooking = Reactive.and(lookUp(), lookRigt()).monitor().subscribe(function (lookGoodUpR){
+            correctLook();
+          });
+          break;
+        case "MiraULImg":
+          isLooking = Reactive.and(lookUp(), lookLeft()).monitor().subscribe(function (lookGoodUpL){
+            correctLook();
+          });
+          break;
+        case "MiraDRImg":
+          isLooking = Reactive.and(lookDown(), lookRigt()).monitor().subscribe(function (lookGoodDownR){
+            correctLook();
+          });
+          break;
+        case "MiraDLImg":
+          isLooking = Reactive.and(lookDown(), lookLeft()).monitor().subscribe(function (lookGoodDownL){
+            correctLook();
+          });
+          break;
+        default:
+          break;                
+      }
+      Diagnostics.log("fin");
+  }
+
+  function correctLook(){
+    correctAudio.setPlaying(true);
+    correctAudio.reset();
+    lightOn();
+    Time.setTimeout(lightOff, 1500);
+    clearSequence();
+    isLooking.unsubscribe();
+    if(j<sequence.length){
+      watchEyes();
+    }
+    if(sequence.length===0){
+      Time.setTimeout(reset,2000);
+    }
+  }
+
+
+  function lookUp(){
+    lookingUp = Reactive.and(eyeMovementLy.ge(0.036000), eyeMovementRy.ge(0.036000));
+    return lookingUp;
+  }
+
+  function lookDown(){
+    lookingDown = Reactive.and(eyeMovementLy.le(0.03300), eyeMovementRy.le(0.03300));
+    return lookingDown;
+  }
+
+  function lookLeft(){
+    lookingLeft = Reactive.and(eyeMovementLx.le(-0.036000), eyeMovementRx.le(0.030000));
+    return lookingLeft;
+  }
+
+  function lookRigt(){
+    lookingRight = Reactive.and(eyeMovementLx.ge(-0.029000), eyeMovementRx.ge(0.036000));
+    return lookingRight;
+  }
+
+  function lookCenterX(){
+    lookingCenterX = Reactive.and(eyeMovementLx.le(-0.030000), eyeMovementLx.ge(-0.035000), eyeMovementRx.ge(0.030000), eyeMovementRx.le(0.035000));
+    return lookingCenterX;  
+  }
+
+  function lookCenterY(){
+    lookingCenterY = Reactive.and(eyeMovementLy.ge(0.033000), eyeMovementLy.le(0.035500), eyeMovementRy.ge(0.033000), eyeMovementRy.le(0.035500));
+    return lookingCenterY;  
+  }
+  
   function setImgCenter(){
     displayMat.diffuse = miraCImg;
-    //Diagnostics.log("center");
   }
 
   function setImgRepite(){
@@ -186,184 +279,15 @@ let rightEye;
 
   function setMaterial(){
     displayMat.diffuse = imgSel;
-    //Diagnostics.log(imgSel.name);
   }
 
-  function setSequence(){
-    sequence.push(imgs[randomNum]);
-  }
-  
-  function stop(){
-    //Time.setTimeout(setImgCenter, delay);
-    status = 'finished';
-    //Diagnostics.log(status);
-    Time.setTimeout(setImgRepite, delay+1000);
-    Time.setTimeout(watchEyes, delay);
-    eyesWatched = watchEyes();
-    Diagnostics.log("---------");
-    
+  function lightOff(){
+    Patches.inputs.setBoolean('flash', false);
   }
 
-  function watchEyes(){
-      switch(sequence[j].name){
-        case "MiraUImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraDImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;  
-        case "MiraRImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraLImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraURImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraULImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraDRImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        case "MiraDLImg":
-          leftEyesPos();
-          rightEyesPos();
-          break;
-        default:
-          //Diagnostics.log("default");
-          break;                
-      }
-      status = 'finished';
-      Diagnostics.log(sequence[j].name);
+  function lightOn(){
+    Patches.inputs.setBoolean('flash', true);
   }
-  
-
-  function leftEyesPos(){
-    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()>0.032000 && eyeMovementLy.pinLastValue()<0.035000){
-      leftEye = "center";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()>0.036000){
-      leftEye =  "up";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()<-0.030000 && eyeMovementLx.pinLastValue()>-0.035000 && eyeMovementLy.pinLastValue()<0.029000){
-      leftEye =  "down";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()>0.030000 && eyeMovementLy.pinLastValue()<0.035000){
-      leftEye =  "left";
-      Diagnostics.log(leftEye);
-    }else
-    if(eyeMovementLx.pinLastValue()>-0.029000 && eyeMovementLy.pinLastValue()>0.032000 && eyeMovementLy.pinLastValue()<0.035000){
-      leftEye =  "right";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()>-0.031500 && eyeMovementLy.pinLastValue()>0.036000){
-      leftEye =  "upRight";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()>0.036000){
-      leftEye =  "upLeft";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()>-0.029000 && eyeMovementLy.pinLastValue()<0.029000){
-      leftEye =  "downRight";
-      Diagnostics.log(leftEye);
-    } else
-    if(eyeMovementLx.pinLastValue()<-0.036000 && eyeMovementLy.pinLastValue()<0.029000){
-      leftEye =  "downLeft";
-      Diagnostics.log(leftEye);
-    }else
-    Diagnostics.log("no match");
-  }
-
-
-  function rightEyesPos(){
-    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()>0.032000 && eyeMovementRy.pinLastValue()<0.035000){
-      rightEye = "center";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()>0.036000){
-      rightEye = "up";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()>0.030000 && eyeMovementRx.pinLastValue()<0.035000 && eyeMovementRy.pinLastValue()<0.029000){
-      rightEye = "down";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()<0.030000 && eyeMovementRy.pinLastValue()>0.030000 && eyeMovementRy.pinLastValue()<0.035000){
-      rightEye = "left";
-      Diagnostics.log(rightEye.toString);
-    }else
-    if(eyeMovementRx.pinLastValue()>0.036000 && eyeMovementRy.pinLastValue()>0.032000 && eyeMovementRy.pinLastValue()<0.035000){
-      rightEye = "right";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()>0.034000 && eyeMovementRy.pinLastValue()>0.036000){
-      rightEye = "upRight";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()<0.028000 && eyeMovementRy.pinLastValue()>0.036000){
-      rightEye = "upLeft";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()>0.036000 && eyeMovementRy.pinLastValue()<0.029000){
-      rightEye = "downRight";
-      Diagnostics.log(rightEye.toString);
-    } else
-    if(eyeMovementRx.pinLastValue()<0.039000 && eyeMovementRy.pinLastValue()<0.029000){
-      rightEye = "downLeft";
-      Diagnostics.log(rightEye.toString);
-    } else
-    Diagnostics.log("no match");
-  }
-
-  // const eyeMovementLx = leftEyeball.iris.x;
-  // const eyeMovementRx = rightEyeball.iris.x;
-  // const eyeMovementLy = leftEyeball.iris.y;
-  // const eyeMovementRy = rightEyeball.iris.y;
-
-
-
-  
-    //rightball iris
-    //center    Lx=-0.033478, Ly=0.033862, Rx=0.034036, Ry=0.028769
-    //          Lx=-0.033112, Ly=0.033311, Rx=0.033741, Ry=0.030371
-
-    //LD        Lx=-0.037807, Ly=0.032257, Rx=0.030798, Ry=0.030726
-    //          Lx=-0.038351, Ly=0.030807, Rx=0.030726, Ry=0.031211
-
-    //left      Lx=-0.040521, Ly=0.033379, Rx=0.027800, Ry=0.032135 
-    //          Lx=-0.040590, Ly=0.032872, Rx=0.028199, Ry=0.031895
-
-    //LUp       Lx=-0.041943, Ly=0.034708, Rx=0.026362, Ry=0.037497 
-    //          Lx=-0.042595, Ly=0.036026, Rx=0.026001, Ry=0.038107
-    
-    //UP        Lx=-0.034335, Ly=0.038400, Rx=0.035107, Ry=0.039782 
-    //          Lx=-0.034325, Ly=0.039331, Rx=0.034447, Ry=0.041007
-
-    //RUp       Lx=-0.027771, Ly=0.037121, Rx=0.041424, Ry=0.038363 
-    //          Lx=-0.026662, Ly=0.036668, Rx=0.041276, Ry=0.037236
-
-    //R         Lx=-0.027593, Ly=0.032998, Rx=0.039267, Ry=0.031879 
-    //          Lx=-0.026632, Ly=0.034631, Rx=0.039550, Ry=0.032752
-
-    //RD        Lx=-0.028621, Ly=0.033784, Rx=0.038274, Ry=0.031781 
-    //          Lx=-0.029477, Ly=0.031880, Rx=0.037675, Ry=0.030304
-    
-    //D         Lx=-0.034382, Ly=0.027386, Rx=0.034028, Ry=0.026945
-    //          Lx=-0.033525, Ly=0.026900, Rx=0.033840, Ry=0.027389
-
 
   function reset(){
     status = 'ready';
@@ -382,10 +306,14 @@ let rightEye;
   function removeElement(e){
     for(i=0;i<imgs.length;i++){
       if(imgs[i]===imgs[e]){
-        //Diagnostics.log("eliminacion");
         imgs.splice(i,1);
       }
     }
+  }
+
+    
+  function clearSequence(){
+    sequence.shift();    
   }
 
 

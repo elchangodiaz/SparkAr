@@ -125,14 +125,12 @@ let i;
         kissAudio.reset();
         break;
       case "closeEyeRImg":
-        var boolrEye = Reactive.and(rEye,lEye.not())
-        Patches.inputs.setBoolean('stickVisible', boolrEye);
+        Patches.inputs.setBoolean('stickVisible', rEye);
         rEyeAudio.setPlaying(true);
         rEyeAudio.reset();
         break;
       case "closeEyeLImg":
-        var boollEye = Reactive.and(lEye,rEye.not());
-        Patches.inputs.setBoolean('stickVisible', boollEye);
+        Patches.inputs.setBoolean('stickVisible', lEye);
         lEyeAudio.setPlaying(true);
         lEyeAudio.reset();
         break;
